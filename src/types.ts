@@ -14,7 +14,8 @@ export type Config = z.infer<typeof ConfigSchema>;
 export const PostTweetSchema = z.object({
     text: z.string()
         .min(1, 'Tweet text cannot be empty')
-        .max(280, 'Tweet cannot exceed 280 characters')
+        .max(280, 'Tweet cannot exceed 280 characters'),
+    reply_to_tweet_id: z.string().optional()
 });
 
 export const SearchTweetsSchema = z.object({

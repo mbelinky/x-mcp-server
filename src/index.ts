@@ -73,6 +73,10 @@ export class TwitterServer {
                 type: 'string',
                 description: 'The content of your tweet',
                 maxLength: 280
+              },
+              reply_to_tweet_id: {
+                type: 'string',
+                description: 'Optional: ID of the tweet to reply to'
               }
             },
             required: ['text']
@@ -133,7 +137,7 @@ export class TwitterServer {
       );
     }
 
-    const tweet = await this.client.postTweet(result.data.text);
+    const tweet = await this.client.postTweet(result.data.text, result.data.reply_to_tweet_id);
     return {
       content: [{
         type: 'text',

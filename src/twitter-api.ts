@@ -16,14 +16,19 @@ export class TwitterClient {
     console.error('Twitter API client initialized');
   }
 
-  async postTweet(text: string): Promise<PostedTweet> {
+  async postTweet(text: string, replyToTweetId?: string): Promise<PostedTweet> {
     try {
       const endpoint = 'tweets/create';
       await this.checkRateLimit(endpoint);
 
-      const response = await this.client.v2.tweet(text);
+      const tweetOptions: any = { text };
+      if (replyToTweetId) {
+        tweetOptions.reply = { in_reply_to_tweet_id: replyToTweetId };
+      }
+
+      const response = await this.client.v2.tweet(tweetOptions);
       
-      console.error(`Tweet posted successfully with ID: ${response.data.id}`);
+      console.error(`Tweet posted successfully with ID: ${response.data.id}${replyToTweetId ? ` (reply to ${replyToTweetId})` : ''}`);
       
       return {
         id: response.data.id,
