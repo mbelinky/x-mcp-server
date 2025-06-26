@@ -1,14 +1,6 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/enescinr-twitter-mcp-badge.png)](https://mseep.ai/app/enescinr-twitter-mcp)
+# X (Twitter) MCP Server - Enhanced Edition
 
-# Twitter MCP Server - Extended Edition
-
-[![smithery badge](https://smithery.ai/badge/@enescinar/twitter-mcp)](https://smithery.ai/server/@enescinar/twitter-mcp)
-
-A Model Context Protocol (MCP) server that enables Claude to interact with Twitter/X, supporting posting tweets (with or without media), searching tweets, and managing your Twitter presence.
-
-<a href="https://glama.ai/mcp/servers/dhsudtc7cd">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/dhsudtc7cd/badge" alt="Twitter Server MCP server" />
-</a>
+An enhanced Model Context Protocol (MCP) server for Twitter/X that adds OAuth 2.0 support, v2 API media uploads, and comprehensive rate limiting to the original implementation.
 
 ## ✨ Features
 
@@ -353,5 +345,12 @@ MIT
 
 ## 🙏 Acknowledgments
 
-- Original implementation by [@enescinar](https://github.com/EnesCinr/twitter-mcp)
-- Extended with OAuth 2.0 and media upload support
+This is an enhanced fork of [@enescinar/twitter-mcp](https://github.com/EnesCinr/twitter-mcp) that adds:
+- OAuth 2.0 authentication support
+- Twitter/X API v2 media upload for OAuth 2.0
+- Automatic v1.1 fallback for OAuth 1.0a
+- Comprehensive rate limiting for free tier
+- Enhanced error handling and debugging
+- Programmatic OAuth 2.0 token generation script
+
+Original implementation by [@enescinar](https://github.com/EnesCinr)
