@@ -65,7 +65,7 @@ export class TwitterServer {
       tools: [
         {
           name: 'post_tweet',
-          description: 'Post a new tweet to Twitter',
+          description: 'Post a new tweet to Twitter with optional media attachments',
           inputSchema: {
             type: 'object',
             properties: {
@@ -77,6 +77,26 @@ export class TwitterServer {
               reply_to_tweet_id: {
                 type: 'string',
                 description: 'Optional: ID of the tweet to reply to'
+              },
+              media: {
+                type: 'array',
+                description: 'Optional: Array of media items to attach to the tweet',
+                items: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'string',
+                      description: 'Base64 encoded media data'
+                    },
+                    media_type: {
+                      type: 'string',
+                      description: 'MIME type of the media',
+                      enum: ['image/jpeg', 'image/png', 'image/gif']
+                    }
+                  },
+                  required: ['data', 'media_type']
+                },
+                maxItems: 4
               }
             },
             required: ['text']
@@ -137,7 +157,12 @@ export class TwitterServer {
       );
     }
 
-    const tweet = await this.client.postTweet(result.data.text, result.data.reply_to_tweet_id);
+    const tweet = await this.client.postTweetWithMedia(
+      result.data.text,
+      result.data.reply_to_tweet_id,
+      result.data.media
+    );
+    
     return {
       content: [{
         type: 'text',
@@ -216,11 +241,25 @@ export class TwitterServer {
 // Start the server
 dotenv.config();
 
+// OAuth configuration - supports both OAuth 1.0a and OAuth 2.0
+const AUTH_TYPE = process.env.AUTH_TYPE || 'oauth1';
+const OAUTH2_CLIENT_ID = process.env.OAUTH2_CLIENT_ID;
+const OAUTH2_CLIENT_SECRET = process.env.OAUTH2_CLIENT_SECRET;
+const OAUTH2_ACCESS_TOKEN = process.env.OAUTH2_ACCESS_TOKEN;
+const OAUTH2_REFRESH_TOKEN = process.env.OAUTH2_REFRESH_TOKEN;
+const OAUTH2_TOKEN_EXPIRES_AT = process.env.OAUTH2_TOKEN_EXPIRES_AT;
+
 const config = {
-  apiKey: process.env.API_KEY!,
-  apiSecretKey: process.env.API_SECRET_KEY!,
-  accessToken: process.env.ACCESS_TOKEN!,
-  accessTokenSecret: process.env.ACCESS_TOKEN_SECRET!
+  apiKey: process.env.API_KEY || '',
+  apiSecretKey: process.env.API_SECRET_KEY || '',
+  accessToken: process.env.ACCESS_TOKEN || '',
+  accessTokenSecret: process.env.ACCESS_TOKEN_SECRET || '',
+  authType: AUTH_TYPE as 'oauth1' | 'oauth2',
+  oauth2ClientId: OAUTH2_CLIENT_ID,
+  oauth2ClientSecret: OAUTH2_CLIENT_SECRET,
+  oauth2AccessToken: OAUTH2_ACCESS_TOKEN,
+  oauth2RefreshToken: OAUTH2_REFRESH_TOKEN,
+  oauth2TokenExpiresAt: OAUTH2_TOKEN_EXPIRES_AT
 };
 
 const server = new TwitterServer(config);

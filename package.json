@@ -1,7 +1,7 @@
 {
-  "name": "@enescinar/twitter-mcp",
-  "version": "0.2.0",
-  "description": "A Model Context Protocol server allows to interact with Twitter, enabling posting tweets and searching Twitter.",
+  "name": "@mbelinky/x-mcp-server",
+  "version": "1.0.0",
+  "description": "Enhanced MCP server for Twitter/X with OAuth 2.0 support, media uploads, and comprehensive rate limiting.",
   "type": "module",
   "main": "build/index.js",
   "bin": {
@@ -9,11 +9,21 @@
   },
   "files": [
     "build",
-    "README.md"
+    "scripts/oauth2-setup.js",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
+    "dev": "npm run build && node build/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "lint": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\"",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -33,15 +43,20 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.24",
+    "chalk": "^5.4.1",
+    "jest": "^30.0.3",
+    "open": "^10.1.2",
+    "ts-jest": "^29.4.0",
     "typescript": "^5.3.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EnesCinr/twitter-mcp.git"
+    "url": "git+https://github.com/mbelinky/x-mcp-server.git"
   },
   "bugs": {
-    "url": "https://github.com/EnesCinr/twitter-mcp/issues"
+    "url": "https://github.com/mbelinky/x-mcp-server/issues"
   },
-  "homepage": "https://github.com/EnesCinr/twitter-mcp#readme"
+  "homepage": "https://github.com/mbelinky/x-mcp-server#readme"
 }
