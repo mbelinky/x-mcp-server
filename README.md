@@ -370,6 +370,25 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
+## 🔒 Privacy Policy
+
+This MCP server:
+- **Does not store any user data**: All Twitter/X API credentials are stored locally on your machine
+- **Does not log sensitive information**: API keys and tokens are never logged
+- **Only communicates with Twitter/X**: No data is sent to any third-party services
+- **Processes data locally**: All operations happen on your machine
+- **Respects rate limits**: Built-in protection for Twitter's API limits
+
+Your tweets, searches, and media remain private between you and Twitter/X.
+
+## 📧 Support
+
+- **Email**: mbelinky@gmail.com
+- **Issues**: [GitHub Issues](https://github.com/mbelinky/x-mcp-server/issues)
+- **Documentation**: [GitHub Wiki](https://github.com/mbelinky/x-mcp-server/wiki)
+
+For security vulnerabilities, please email directly instead of creating a public issue.
+
 ## 📄 License
 
 MIT

@@ -1,0 +1,128 @@
+{
+  "dxt_version": "0.1",
+  "name": "x-twitter-mcp",
+  "version": "1.0.0",
+  "description": "Enhanced MCP server for Twitter/X with OAuth 2.0 support, v2 API media uploads, and comprehensive rate limiting",
+  "author": {
+    "name": "Mariano Belinky",
+    "email": "mbelinky@gmail.com"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "build/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/build/index.js"]
+    }
+  },
+  "user_config": {
+    "auth_type": {
+      "type": "select",
+      "title": "Authentication Type",
+      "description": "Choose OAuth 1.0a or OAuth 2.0",
+      "enum": ["oauth1", "oauth2"],
+      "default": "oauth1",
+      "required": true
+    },
+    "api_key": {
+      "type": "string",
+      "title": "API Key (OAuth 1.0a)",
+      "description": "Your Twitter/X API Key",
+      "sensitive": true,
+      "required_if": "auth_type=oauth1"
+    },
+    "api_secret_key": {
+      "type": "string",
+      "title": "API Secret Key (OAuth 1.0a)",
+      "description": "Your Twitter/X API Secret Key",
+      "sensitive": true,
+      "required_if": "auth_type=oauth1"
+    },
+    "access_token": {
+      "type": "string",
+      "title": "Access Token (OAuth 1.0a)",
+      "description": "Your Twitter/X Access Token",
+      "sensitive": true,
+      "required_if": "auth_type=oauth1"
+    },
+    "access_token_secret": {
+      "type": "string",
+      "title": "Access Token Secret (OAuth 1.0a)",
+      "description": "Your Twitter/X Access Token Secret",
+      "sensitive": true,
+      "required_if": "auth_type=oauth1"
+    },
+    "oauth2_client_id": {
+      "type": "string",
+      "title": "OAuth 2.0 Client ID",
+      "description": "Your Twitter/X OAuth 2.0 Client ID",
+      "sensitive": true,
+      "required_if": "auth_type=oauth2"
+    },
+    "oauth2_client_secret": {
+      "type": "string",
+      "title": "OAuth 2.0 Client Secret",
+      "description": "Your Twitter/X OAuth 2.0 Client Secret",
+      "sensitive": true,
+      "required_if": "auth_type=oauth2"
+    },
+    "oauth2_access_token": {
+      "type": "string",
+      "title": "OAuth 2.0 Access Token",
+      "description": "Your Twitter/X OAuth 2.0 Access Token",
+      "sensitive": true,
+      "required_if": "auth_type=oauth2"
+    },
+    "oauth2_refresh_token": {
+      "type": "string",
+      "title": "OAuth 2.0 Refresh Token",
+      "description": "Your Twitter/X OAuth 2.0 Refresh Token",
+      "sensitive": true,
+      "required_if": "auth_type=oauth2"
+    }
+  },
+  "tools": [
+    {
+      "name": "post_tweet",
+      "description": "Post a new tweet with optional media attachments"
+    },
+    {
+      "name": "search_tweets",
+      "description": "Search for tweets with customizable result count"
+    },
+    {
+      "name": "delete_tweet",
+      "description": "Delete a tweet by its ID"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "tweet_announcement",
+      "description": "Draft a tweet announcement",
+      "arguments": ["topic"],
+      "text": "Draft a concise tweet (under 280 characters) announcing: ${arguments.topic}"
+    },
+    {
+      "name": "search_trends",
+      "description": "Search for trending topics",
+      "arguments": ["keyword"],
+      "text": "Search for recent tweets about ${arguments.keyword} and summarize the main themes"
+    },
+    {
+      "name": "engagement_reply",
+      "description": "Create an engaging reply",
+      "arguments": ["tweet_content"],
+      "text": "Draft a thoughtful reply to this tweet: ${arguments.tweet_content}"
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=1.0.0",
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "homepage": "https://github.com/mbelinky/x-mcp-server",
+  "repository": "https://github.com/mbelinky/x-mcp-server",
+  "license": "MIT"
+}

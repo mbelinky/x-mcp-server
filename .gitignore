@@ -9,3 +9,5 @@ dist/
 .DS_Store
 coverage/
 *.tmp
+.dxt-build/
+*.dxt

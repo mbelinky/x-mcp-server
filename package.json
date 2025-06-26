@@ -24,14 +24,25 @@
     "test:integration": "jest tests/integration",
     "lint": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "build:dxt": "node scripts/build-dxt.js"
   },
   "keywords": [
     "mcp",
+    "mcp-server",
     "modelcontextprotocol",
     "server",
     "twitter",
-    "claude"
+    "x",
+    "twitter-api",
+    "x-api",
+    "claude",
+    "claude-ai",
+    "oauth",
+    "oauth2",
+    "social-media",
+    "tweet",
+    "api"
   ],
   "author": "Enes Cinar",
   "license": "MIT",
