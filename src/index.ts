@@ -17,6 +17,7 @@ import {
   TwitterError
 } from './types.js';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 export class TwitterServer {
   private server: Server;
@@ -121,6 +122,20 @@ export class TwitterServer {
             },
             required: ['query', 'count']
           }
+        } as Tool,
+        {
+          name: 'delete_tweet',
+          description: 'Delete a tweet by its ID',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              tweet_id: {
+                type: 'string',
+                description: 'The ID of the tweet to delete'
+              }
+            },
+            required: ['tweet_id']
+          }
         } as Tool
       ]
     }));
@@ -136,6 +151,8 @@ export class TwitterServer {
             return await this.handlePostTweet(args);
           case 'search_tweets':
             return await this.handleSearchTweets(args);
+          case 'delete_tweet':
+            return await this.handleDeleteTweet(args);
           default:
             throw new McpError(
               ErrorCode.MethodNotFound,
@@ -195,6 +212,30 @@ export class TwitterServer {
       content: [{
         type: 'text',
         text: ResponseFormatter.toMcpResponse(formattedResponse)
+      }] as TextContent[]
+    };
+  }
+
+  private async handleDeleteTweet(args: unknown) {
+    const result = z.object({
+      tweet_id: z.string()
+    }).safeParse(args);
+    
+    if (!result.success) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Invalid parameters: ${result.error.message}`
+      );
+    }
+
+    const deleteResult = await this.client.deleteTweet(result.data.tweet_id);
+    
+    return {
+      content: [{
+        type: 'text',
+        text: deleteResult.deleted 
+          ? `Tweet ${result.data.tweet_id} deleted successfully!`
+          : `Failed to delete tweet ${result.data.tweet_id}`
       }] as TextContent[]
     };
   }
