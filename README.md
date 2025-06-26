@@ -12,6 +12,26 @@ An enhanced Model Context Protocol (MCP) server for Twitter/X that adds OAuth 2.
 - **Rate Limiting**: Built-in protection for Twitter's API limits
 - **Type Safety**: Full TypeScript implementation with Zod validation
 
+## 🔄 API Version Handling
+
+This server intelligently uses different Twitter API versions based on authentication method and operation:
+
+### OAuth 1.0a
+- **Tweet operations**: Uses v2 API endpoints
+- **Media upload**: Uses v1.1 endpoint (`upload.twitter.com`)
+- **Delete fallback**: Automatically falls back to v1.1 when v2 fails
+
+### OAuth 2.0
+- **All operations**: Uses v2 API endpoints exclusively
+- **Media upload**: Uses v2 endpoint (`api.x.com/2/media/upload`)
+- **No v1.1 access**: Cannot fall back to v1.1 due to authentication restrictions
+
+### Why Different Endpoints?
+- **v1.1**: Legacy API, being phased out but still works with OAuth 1.0a
+- **v2**: Modern API with better features but some endpoints have issues
+- **Media**: OAuth 2.0 tokens cannot access v1.1 media endpoints, must use v2
+- **Delete**: v2 delete endpoint currently has issues (500 errors), v1.1 works as fallback
+
 ## 📋 Prerequisites
 
 Before you begin, you'll need:
@@ -214,6 +234,15 @@ Example prompts:
 - "Search for tweets about #MachineLearning"
 - "Find 50 recent tweets mentioning @ClaudeAI"
 - "Search for tweets about TypeScript tutorials"
+
+### `delete_tweet`
+Delete a tweet by its ID.
+
+Example prompts:
+- "Delete tweet with ID 1234567890"
+- "Remove my last tweet (provide the ID)"
+
+Note: Due to temporary Twitter API issues, OAuth 1.0a uses v1.1 fallback for deletion.
 
 ## 🧪 Testing
 
