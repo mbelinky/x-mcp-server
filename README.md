@@ -1,5 +1,7 @@
 # X (Twitter) MCP Server - Enhanced Edition
 
+[![npm version](https://badge.fury.io/js/@mbelinky%2Fx-mcp-server.svg)](https://www.npmjs.com/package/@mbelinky/x-mcp-server)
+
 An enhanced Model Context Protocol (MCP) server for Twitter/X that adds OAuth 2.0 support, v2 API media uploads, and comprehensive rate limiting to the original implementation.
 
 ## ✨ Features
