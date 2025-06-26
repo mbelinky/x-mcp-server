@@ -1,6 +1,6 @@
 {
   "name": "@mbelinky/x-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enhanced MCP server for Twitter/X with OAuth 2.0 support, media uploads, and comprehensive rate limiting.",
   "type": "module",
   "main": "build/index.js",
@@ -56,6 +56,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^20.11.24",
+    "archiver": "^7.0.1",
     "chalk": "^5.4.1",
     "jest": "^30.0.3",
     "open": "^10.1.2",

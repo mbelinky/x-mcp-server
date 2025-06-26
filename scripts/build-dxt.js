@@ -32,12 +32,13 @@ async function buildDxt() {
     await cp(join(projectRoot, 'manifest.json'), join(tempDir, 'manifest.json'));
     await cp(join(projectRoot, 'build'), join(tempDir, 'build'), { recursive: true });
     await cp(join(projectRoot, 'package.json'), join(tempDir, 'package.json'));
+    await cp(join(projectRoot, 'package-lock.json'), join(tempDir, 'package-lock.json'));
     await cp(join(projectRoot, 'README.md'), join(tempDir, 'README.md'));
     await cp(join(projectRoot, 'LICENSE'), join(tempDir, 'LICENSE'));
     
     // Copy node_modules (excluding dev dependencies)
     console.log('📚 Installing production dependencies...');
-    await execAsync('npm ci --production', { cwd: tempDir });
+    await execAsync('npm ci --omit=dev', { cwd: tempDir });
     
     // Create the zip archive
     console.log('🗜️ Creating DXT archive...');
