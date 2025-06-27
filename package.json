@@ -1,6 +1,6 @@
 {
   "name": "@mbelinky/x-mcp-server",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Enhanced MCP server for X with OAuth 2.0 support, media uploads, and comprehensive rate limiting.",
   "type": "module",
   "main": "build/index.js",
