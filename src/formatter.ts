@@ -1,7 +1,7 @@
-import { FormattedTweet, Tweet, TwitterUser, SearchResponse } from './types.js';
+import { FormattedTweet, Tweet, XUser, SearchResponse } from './types.js';
 
 export class ResponseFormatter {
-  static formatTweet(tweet: Tweet, user: TwitterUser, position: number): FormattedTweet {
+  static formatTweet(tweet: Tweet, user: XUser, position: number): FormattedTweet {
     return {
       position,
       author: {
@@ -9,14 +9,14 @@ export class ResponseFormatter {
       },
       content: tweet.text,
       metrics: tweet.metrics,
-      url: `https://twitter.com/${user.username}/status/${tweet.id}`
+      url: `https://x.com/${user.username}/status/${tweet.id}`
     };
   }
 
   static formatSearchResponse(
     query: string,
     tweets: Tweet[],
-    users: TwitterUser[]
+    users: XUser[]
   ): SearchResponse {
     const userMap = new Map(users.map(user => [user.id, user]));
     
@@ -38,7 +38,7 @@ export class ResponseFormatter {
 
   static toMcpResponse(response: SearchResponse): string {
     const header = [
-      'TWITTER SEARCH RESULTS',
+      'X SEARCH RESULTS',
       `Query: "${response.query}"`,
       `Found ${response.count} tweets`,
       '='

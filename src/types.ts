@@ -34,8 +34,10 @@ export type SupportedMediaType = typeof SUPPORTED_MEDIA_TYPES[number];
 
 // Media types
 export interface MediaItem {
-    data: string;      // Base64 encoded media
+    data?: string;      // Base64 encoded media (optional)
+    file_path?: string; // File system path (optional)
     media_type: SupportedMediaType; // MIME type
+    _cleanup?: boolean; // Internal flag for temp file cleanup
 }
 
 // Tool input schemas
@@ -45,9 +47,13 @@ export const PostTweetSchema = z.object({
         .max(280, 'Tweet cannot exceed 280 characters'),
     reply_to_tweet_id: z.string().optional(),
     media: z.array(z.object({
-        data: z.string(),
+        data: z.string().optional(),
+        file_path: z.string().optional(),
         media_type: z.enum(SUPPORTED_MEDIA_TYPES)
-    })).max(4, 'Maximum 4 media items allowed per tweet').optional()
+    }).refine(
+        item => !!(item.data || item.file_path),
+        { message: "Either 'data' or 'file_path' must be provided" }
+    )).max(4, 'Maximum 4 media items allowed per tweet').optional()
 });
 
 export const SearchTweetsSchema = z.object({
@@ -72,7 +78,7 @@ export interface TweetMetrics {
     retweets: number;
 }
 
-// Twitter API specific types
+// X API specific types
 export interface TweetOptions {
     text: string;
     reply?: {
@@ -83,7 +89,7 @@ export interface TweetOptions {
     };
 }
 
-export interface TwitterApiResponse {
+export interface XApiResponse {
     data: {
         id: string;
         text: string;
@@ -103,24 +109,24 @@ export interface Tweet {
     createdAt: string;
 }
 
-export interface TwitterUser {
+export interface XUser {
     id: string;
     username: string;
 }
 
 // Error types
-export class TwitterError extends Error {
+export class XError extends Error {
     constructor(
         message: string,
         public readonly code: string,
         public readonly status?: number
     ) {
         super(message);
-        this.name = 'TwitterError';
+        this.name = 'XError';
     }
 
-    static isRateLimit(error: unknown): error is TwitterError {
-        return error instanceof TwitterError && error.code === 'rate_limit_exceeded';
+    static isRateLimit(error: unknown): error is XError {
+        return error instanceof XError && error.code === 'rate_limit_exceeded';
     }
 }
 

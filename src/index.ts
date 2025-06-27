@@ -9,19 +9,22 @@ import {
   McpError,
   TextContent
 } from '@modelcontextprotocol/sdk/types.js';
-import { TwitterClient } from './twitter-api.js';
+import { XClient } from './x-api.js';
 import { ResponseFormatter } from './formatter.js';
 import {
   Config, ConfigSchema,
   PostTweetSchema, SearchTweetsSchema,
-  TwitterError
+  XError, MediaItem
 } from './types.js';
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { promises as fs } from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
-export class TwitterServer {
+export class XServer {
   private server: Server;
-  private client: TwitterClient;
+  private client: XClient;
 
   constructor(config: Config) {
     // Validate config
@@ -30,9 +33,9 @@ export class TwitterServer {
       throw new Error(`Invalid configuration: ${result.error.message}`);
     }
 
-    this.client = new TwitterClient(config);
+    this.client = new XClient(config);
     this.server = new Server({
-      name: 'twitter-mcp',
+      name: 'x-mcp',
       version: '1.0.0'
     }, {
       capabilities: {
@@ -66,7 +69,7 @@ export class TwitterServer {
       tools: [
         {
           name: 'post_tweet',
-          description: 'Post a new tweet to Twitter with optional media attachments',
+          description: 'Post a new tweet to X with optional media attachments',
           inputSchema: {
             type: 'object',
             properties: {
@@ -87,7 +90,11 @@ export class TwitterServer {
                   properties: {
                     data: {
                       type: 'string',
-                      description: 'Base64 encoded media data'
+                      description: 'Base64 encoded media data (for programmatic use - Claude cannot extract base64 from pasted images)'
+                    },
+                    file_path: {
+                      type: 'string',
+                      description: 'Path to local media file (recommended for Claude users - use this for all image uploads)'
                     },
                     media_type: {
                       type: 'string',
@@ -95,7 +102,7 @@ export class TwitterServer {
                       enum: ['image/jpeg', 'image/png', 'image/gif']
                     }
                   },
-                  required: ['data', 'media_type']
+                  required: ['media_type']
                 },
                 maxItems: 4
               }
@@ -105,7 +112,7 @@ export class TwitterServer {
         } as Tool,
         {
           name: 'search_tweets',
-          description: 'Search for tweets on Twitter',
+          description: 'Search for tweets on X',
           inputSchema: {
             type: 'object',
             properties: {
@@ -174,18 +181,59 @@ export class TwitterServer {
       );
     }
 
-    const tweet = await this.client.postTweetWithMedia(
-      result.data.text,
-      result.data.reply_to_tweet_id,
-      result.data.media
-    );
-    
-    return {
-      content: [{
-        type: 'text',
-        text: `Tweet posted successfully!\nURL: https://twitter.com/status/${tweet.id}`
-      }] as TextContent[]
-    };
+    // Convert base64 media to temp files for better performance
+    const processedMedia = result.data.media ? 
+      await Promise.all(result.data.media.map(async (item) => {
+        if (item.data && !item.file_path) {
+          // Convert base64 to temp file
+          const buffer = Buffer.from(item.data, 'base64');
+          const ext = item.media_type.split('/')[1] || 'jpg';
+          const tempPath = path.join(os.tmpdir(), 
+            `mcp-x-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`
+          );
+          
+          await fs.writeFile(tempPath, buffer);
+          console.error(`Created temp file: ${tempPath} (${buffer.length} bytes)`);
+          
+          // Return with file_path instead of data
+          return {
+            file_path: tempPath,
+            media_type: item.media_type,
+            _cleanup: true // Mark for cleanup
+          } as MediaItem;
+        }
+        return item as MediaItem;
+      })) : undefined;
+
+    try {
+      const tweet = await this.client.postTweetWithMedia(
+        result.data.text,
+        result.data.reply_to_tweet_id,
+        processedMedia
+      );
+      
+      return {
+        content: [{
+          type: 'text',
+          text: `Tweet posted successfully!\nURL: https://x.com/status/${tweet.id}`
+        }] as TextContent[]
+      };
+    } finally {
+      // Cleanup temp files
+      if (processedMedia) {
+        for (const item of processedMedia) {
+          if (item._cleanup && item.file_path) {
+            try {
+              await fs.unlink(item.file_path);
+              console.error(`Cleaned up temp file: ${item.file_path}`);
+            } catch (err) {
+              // Ignore cleanup errors
+              console.error(`Failed to clean up temp file ${item.file_path}:`, err);
+            }
+          }
+        }
+      }
+    }
   }
 
   private async handleSearchTweets(args: unknown) {
@@ -245,8 +293,8 @@ export class TwitterServer {
       throw error;
     }
 
-    if (error instanceof TwitterError) {
-      if (TwitterError.isRateLimit(error)) {
+    if (error instanceof XError) {
+      if (XError.isRateLimit(error)) {
         return {
           content: [{
             type: 'text',
@@ -259,7 +307,7 @@ export class TwitterServer {
       return {
         content: [{
           type: 'text',
-          text: `Twitter API error: ${(error as TwitterError).message}`,
+          text: `X API error: ${(error as XError).message}`,
           isError: true
         }] as TextContent[]
       };
@@ -275,7 +323,7 @@ export class TwitterServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error('Twitter MCP server running on stdio');
+    console.error('X MCP server running on stdio');
   }
 }
 
@@ -303,7 +351,7 @@ const config = {
   oauth2TokenExpiresAt: OAUTH2_TOKEN_EXPIRES_AT
 };
 
-const server = new TwitterServer(config);
+const server = new XServer(config);
 server.start().catch(error => {
   console.error('Failed to start server:', error);
   process.exit(1);

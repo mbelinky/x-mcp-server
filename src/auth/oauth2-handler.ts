@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TOKEN_URL = 'https://api.twitter.com/2/oauth2/token';
+const TOKEN_URL = 'https://api.x.com/2/oauth2/token';
 
 export class OAuth2Handler {
   private config: Config;

@@ -2,13 +2,13 @@ import { TwitterApi } from 'twitter-api-v2';
 import { Config } from '../types.js';
 
 /**
- * Creates a TwitterApi client based on the provided configuration.
+ * Creates an X API client based on the provided configuration.
  * Supports both OAuth 1.0a and OAuth 2.0 authentication methods.
  * 
  * @param config - The configuration object containing authentication credentials
  * @returns A configured TwitterApi client instance
  */
-export function createTwitterClient(config: Config): TwitterApi {
+export function createXClient(config: Config): TwitterApi {
   if (config.authType === 'oauth2') {
     // OAuth 2.0 authentication
     // Using the access token directly for OAuth 2.0
@@ -18,7 +18,7 @@ export function createTwitterClient(config: Config): TwitterApi {
     }
     
     if (process.env.DEBUG === 'true') {
-      console.error('Initializing Twitter API with OAuth 2.0');
+      console.error('Initializing X API with OAuth 2.0');
     }
     
     // Create client with OAuth 2.0 bearer token
@@ -30,7 +30,7 @@ export function createTwitterClient(config: Config): TwitterApi {
     }
     
     if (process.env.DEBUG === 'true') {
-      console.error('Initializing Twitter API with OAuth 1.0a');
+      console.error('Initializing X API with OAuth 1.0a');
     }
     
     return new TwitterApi({

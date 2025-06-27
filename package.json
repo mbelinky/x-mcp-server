@@ -1,11 +1,11 @@
 {
   "name": "@mbelinky/x-mcp-server",
   "version": "1.0.1",
-  "description": "Enhanced MCP server for Twitter/X with OAuth 2.0 support, media uploads, and comprehensive rate limiting.",
+  "description": "Enhanced MCP server for X with OAuth 2.0 support, media uploads, and comprehensive rate limiting.",
   "type": "module",
   "main": "build/index.js",
   "bin": {
-    "twitter-server": "./build/index.js"
+    "x-server": "./build/index.js"
   },
   "files": [
     "build",

@@ -1,22 +1,22 @@
-# X (Twitter) MCP Server - Enhanced Edition
+# X MCP Server - Enhanced Edition
 
 [![npm version](https://badge.fury.io/js/@mbelinky%2Fx-mcp-server.svg)](https://www.npmjs.com/package/@mbelinky/x-mcp-server)
 
-An enhanced Model Context Protocol (MCP) server for Twitter/X that adds OAuth 2.0 support, v2 API media uploads, and comprehensive rate limiting to the original implementation.
+An enhanced Model Context Protocol (MCP) server for X that adds OAuth 2.0 support, v2 API media uploads, and comprehensive rate limiting to the original implementation.
 
 ## ✨ Features
 
 - **Post Tweets**: Create text tweets with optional media attachments (images, GIFs)
-- **Search Tweets**: Search Twitter with customizable result count
+- **Search Tweets**: Search X with customizable result count
 - **Delete Tweets**: Remove your tweets programmatically
 - **Dual Authentication**: Support for both OAuth 1.0a and OAuth 2.0
 - **Media Upload**: Post images using the appropriate API version for each auth method
-- **Rate Limiting**: Built-in protection for Twitter's API limits
+- **Rate Limiting**: Built-in protection for X's API limits
 - **Type Safety**: Full TypeScript implementation with Zod validation
 
 ## 🔄 API Version Handling
 
-This server intelligently uses different Twitter API versions based on authentication method and operation:
+This server intelligently uses different X API versions based on authentication method and operation:
 
 ### OAuth 1.0a
 - **Tweet operations**: Uses v2 API endpoints
@@ -38,8 +38,8 @@ This server intelligently uses different Twitter API versions based on authentic
 
 Before you begin, you'll need:
 
-1. A Twitter/X Developer Account (sign up at [developer.twitter.com](https://developer.twitter.com))
-2. A Twitter App created in the Developer Portal
+1. An X Developer Account (sign up at [developer.x.com](https://developer.x.com))
+2. An X App created in the Developer Portal
 3. API credentials (detailed setup below)
 4. Node.js 18+ installed
 
@@ -50,10 +50,10 @@ This server supports two authentication methods. Choose based on your needs:
 - **OAuth 1.0a**: Simpler setup, works with all features including v1.1 fallbacks
 - **OAuth 2.0**: Modern authentication, required for some newer features
 
-### Setting Up Your Twitter App
+### Setting Up Your X App
 
 1. **Create a Developer Account**:
-   - Go to [developer.twitter.com](https://developer.twitter.com)
+   - Go to [developer.x.com](https://developer.x.com)
    - Sign in with your Twitter account
    - Apply for developer access if you haven't already
 
@@ -245,6 +245,32 @@ Example prompts:
 - "Remove my last tweet (provide the ID)"
 
 Note: Due to temporary Twitter API issues, OAuth 1.0a uses v1.1 fallback for deletion.
+
+### 📸 Media Upload Notes
+
+When using Claude to post tweets with images:
+- **Use file paths**: Save your image to disk and provide the file path
+- **Base64 limitation**: While the server supports base64 encoded images, Claude cannot extract base64 from pasted images
+- **Other clients**: Base64 support remains available for programmatic use and other MCP clients
+
+Example usage:
+```
+# ✅ Recommended for Claude
+"Post tweet with image at /Users/me/photos/sunset.png"
+
+# ❌ Not currently supported in Claude
+"Post this image: [pasting an image directly]"
+
+# ✅ Works programmatically
+// In code, you can still use base64
+{
+  "text": "Hello world!",
+  "media": [{
+    "data": "iVBORw0KGgoAAAANS...",
+    "media_type": "image/png"
+  }]
+}
+```
 
 ## 🧪 Testing
 

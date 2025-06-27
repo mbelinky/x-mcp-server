@@ -1,9 +1,10 @@
 import { TwitterApi } from 'twitter-api-v2';
-import { Config, TwitterError, Tweet, TwitterUser, PostedTweet, MediaItem, TweetOptions, TwitterApiResponse, MAX_BASE64_SIZE, MAX_MEDIA_FILE_SIZE, DEBUG } from './types.js';
-import { createTwitterClient } from './auth/factory.js';
+import { Config, XError, Tweet, XUser, PostedTweet, MediaItem, TweetOptions, XApiResponse, MAX_BASE64_SIZE, MAX_MEDIA_FILE_SIZE, DEBUG } from './types.js';
+import { createXClient } from './auth/factory.js';
 import { V2MediaUploader } from './media/v2-upload.js';
+import { promises as fs } from 'fs';
 
-export class TwitterClient {
+export class XClient {
   private client: TwitterApi;
   private config: Config;
   private v2MediaUploader: V2MediaUploader | null = null;
@@ -28,7 +29,7 @@ export class TwitterClient {
 
   constructor(config: Config) {
     this.config = config;
-    this.client = createTwitterClient(config);
+    this.client = createXClient(config);
     
     // Initialize v2 media uploader for OAuth 2.0
     if (config.authType === 'oauth2' && config.oauth2AccessToken) {
@@ -36,7 +37,7 @@ export class TwitterClient {
     }
     
     if (DEBUG) {
-      console.error('Twitter API client initialized');
+      console.error('X API client initialized');
     }
   }
 
@@ -56,7 +57,7 @@ export class TwitterClient {
         tweetOptions.reply = { in_reply_to_tweet_id: replyToTweetId };
       }
 
-      const response: TwitterApiResponse = await this.client.v2.tweet(tweetOptions);
+      const response: XApiResponse = await this.client.v2.tweet(tweetOptions);
       
       if (DEBUG) {
         console.error(`Tweet posted successfully with ID: ${response.data.id}${replyToTweetId ? ` (reply to ${replyToTweetId})` : ''}`);
@@ -87,7 +88,7 @@ export class TwitterClient {
     try {
       // Validate media size
       if (buffer.length > MAX_MEDIA_FILE_SIZE) {
-        throw new TwitterError(
+        throw new XError(
           `Media file too large. Maximum size is ${Math.round(MAX_MEDIA_FILE_SIZE / 1024 / 1024)}MB. Your file is ${Math.round(buffer.length / 1024 / 1024)}MB.`,
           'file_too_large',
           400
@@ -122,7 +123,7 @@ export class TwitterClient {
     } catch (error) {
       // Provide more helpful error messages for common issues
       if (error instanceof Error && (error.message.includes('scope') || error.message.includes('403'))) {
-        throw new TwitterError(
+        throw new XError(
           'Media upload failed: This might be a scope issue (needs media.write) or authentication problem.',
           'media_upload_forbidden',
           403
@@ -162,32 +163,57 @@ export class TwitterClient {
         const mediaIds: string[] = [];
         
         for (const item of mediaItems) {
-          // Validate base64 data size before processing
-          if (item.data.length > MAX_BASE64_SIZE) {
-            throw new TwitterError(
-              `Base64 media data too large. Maximum size is ${Math.round(MAX_BASE64_SIZE / 1024 / 1024)}MB encoded.`,
-              'base64_too_large',
-              400
-            );
-          }
-
-          if (DEBUG) {
-            console.error(`Uploading media with type: ${item.media_type}`);
-          }
-          
-          // Validate and decode base64 data
           let buffer: Buffer;
-          try {
-            buffer = Buffer.from(item.data, 'base64');
-            
-            // Validate that decoding was successful by checking if it's valid base64
-            if (buffer.toString('base64') !== item.data) {
-              throw new Error('Invalid base64 encoding');
+          
+          if (item.file_path) {
+            // Handle file path - most efficient
+            if (DEBUG) {
+              console.error(`Uploading media from file: ${item.file_path} with type: ${item.media_type}`);
             }
-          } catch (decodeError) {
-            throw new TwitterError(
-              `Invalid base64 media data. Please ensure your media is properly base64 encoded.`,
-              'invalid_base64',
+            
+            try {
+              buffer = await fs.readFile(item.file_path);
+            } catch (fileError) {
+              throw new XError(
+                `Failed to read media file: ${item.file_path}. ${fileError instanceof Error ? fileError.message : 'Unknown error'}`,
+                'file_read_error',
+                400
+              );
+            }
+          } else if (item.data) {
+            // Handle base64 data
+            // Validate base64 data size before processing
+            if (item.data.length > MAX_BASE64_SIZE) {
+              throw new XError(
+                `Base64 media data too large. Maximum size is ${Math.round(MAX_BASE64_SIZE / 1024 / 1024)}MB encoded.`,
+                'base64_too_large',
+                400
+              );
+            }
+
+            if (DEBUG) {
+              console.error(`Uploading media from base64 with type: ${item.media_type}`);
+            }
+            
+            // Validate and decode base64 data
+            try {
+              buffer = Buffer.from(item.data, 'base64');
+              
+              // Quick validation - just check if buffer has content
+              if (buffer.length === 0) {
+                throw new Error('Empty buffer after base64 decode');
+              }
+            } catch (decodeError) {
+              throw new XError(
+                `Invalid base64 media data. Please ensure your media is properly base64 encoded.`,
+                'invalid_base64',
+                400
+              );
+            }
+          } else {
+            throw new XError(
+              'No media data provided. Either data or file_path must be specified.',
+              'no_media_data',
               400
             );
           }
@@ -208,7 +234,7 @@ export class TwitterClient {
         tweetOptions.reply = { in_reply_to_tweet_id: replyToTweetId };
       }
       
-      const response: TwitterApiResponse = await this.client.v2.tweet(tweetOptions);
+      const response: XApiResponse = await this.client.v2.tweet(tweetOptions);
       
       if (DEBUG) {
         console.error(`Tweet posted successfully with ID: ${response.data.id}${replyToTweetId ? ` (reply to ${replyToTweetId})` : ''}${mediaItems?.length ? ` with ${mediaItems.length} media item(s)` : ''}`);
@@ -223,7 +249,7 @@ export class TwitterClient {
     }
   }
 
-  async searchTweets(query: string, count: number): Promise<{ tweets: Tweet[], users: TwitterUser[] }> {
+  async searchTweets(query: string, count: number): Promise<{ tweets: Tweet[], users: XUser[] }> {
     try {
       const endpoint = 'tweets/search';
       await this.checkRateLimit(endpoint);
@@ -342,7 +368,7 @@ export class TwitterClient {
             return { deleted: !!v1Response.id_str };
           } else {
             // For OAuth 2.0, we can't use v1.1, so provide helpful error
-            throw new TwitterError(
+            throw new XError(
               'Tweet deletion failed: Twitter v2 delete endpoint is currently experiencing issues (500 error). ' +
               'Unfortunately, OAuth 2.0 cannot use the v1.1 fallback. Please try again later or use OAuth 1.0a.',
               'delete_unavailable',
@@ -370,7 +396,7 @@ export class TwitterClient {
       const timeSinceLastRequest = Date.now() - lastRequest;
       if (timeSinceLastRequest < rateLimit) {
         const waitTime = Math.ceil((rateLimit - timeSinceLastRequest) / 1000);
-        throw new TwitterError(
+        throw new XError(
           `Rate limit: Please wait ${waitTime} seconds before next ${endpoint} request`,
           'rate_limit_exceeded',
           429
@@ -391,7 +417,7 @@ export class TwitterClient {
       const current = this.dailyLimits.get(endpoint);
       if (current && current.count >= dailyLimit) {
         const hoursUntilReset = Math.ceil((current.resetAt.getTime() - now.getTime()) / (1000 * 60 * 60));
-        throw new TwitterError(
+        throw new XError(
           `Daily limit exceeded (${dailyLimit} per 24h). Resets in ${hoursUntilReset} hours.`,
           'daily_limit_exceeded',
           429
@@ -412,7 +438,7 @@ export class TwitterClient {
   }
 
   private handleApiError(error: unknown): never {
-    if (error instanceof TwitterError) {
+    if (error instanceof XError) {
       throw error;
     }
 
@@ -431,7 +457,7 @@ export class TwitterClient {
     }
     
     if (apiError.code) {
-      throw new TwitterError(
+      throw new XError(
         apiError.message || 'Twitter API error',
         apiError.code,
         apiError.status
@@ -440,7 +466,7 @@ export class TwitterClient {
 
     // Handle unexpected errors
     console.error('Unexpected error in Twitter client:', error);
-    throw new TwitterError(
+    throw new XError(
       'An unexpected error occurred',
       'internal_error',
       500

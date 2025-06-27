@@ -1,9 +1,9 @@
-import { TwitterError } from '../types.js';
+import { XError } from '../types.js';
 
 const V2_MEDIA_UPLOAD_URL = 'https://api.x.com/2/media/upload';
 
 /**
- * Upload media using Twitter API v2 endpoints
+ * Upload media using X API v2 endpoints
  * This implements the single-request upload for v2
  */
 export class V2MediaUploader {
@@ -58,7 +58,7 @@ export class V2MediaUploader {
       return result.media_id_string || result.media_id || result.id;
     } catch (error) {
       if (error instanceof Error) {
-        throw new TwitterError(
+        throw new XError(
           `V2 media upload failed: ${error.message}`,
           'media_upload_failed',
           500
